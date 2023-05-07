@@ -22,22 +22,17 @@ namespace RockyShop.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            var products = _dbContext.Products.ToList();
-            foreach(var product in products)
-            {
-                product.Category = _dbContext.Categories.FirstOrDefault(c => c.Id == product.CategoryId);
-            }
+            var products = _dbContext.Products
+                .Include(p => p.Category)
+                .Include(p => p.ApplicationType);
             return View(products);
         }
 
         [HttpGet]
         public IActionResult Upsert(int? id)
         {
-            var viewModel = new ProductVM()
-            {
-                CategoryDropDown = GetCategoryDropDown(),
-                Product = new Product()
-            };
+            var viewModel = new ProductVM();
+            PopulateProductVM(viewModel);
 
             if (id == null)
                 return View(viewModel);
@@ -52,7 +47,7 @@ namespace RockyShop.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Upsert(ProductVM fromRequest)
         {
-            fromRequest.CategoryDropDown = GetCategoryDropDown();
+            PopulateProductVM(fromRequest);
             if (!ModelState.IsValid)
                 return View(fromRequest);
 
@@ -85,10 +80,12 @@ namespace RockyShop.Controllers
             //Update
             else
             {
-                string oldFileName = _dbContext.Products
+                var toUpdate = _dbContext.Products
                     .AsNoTracking()
-                    .FirstOrDefault(p => p.Id == fromRequest.Product.Id)
-                    .Image;
+                    .FirstOrDefault(p => p.Id == fromRequest.Product.Id);
+                if (toUpdate == null)
+                    return NotFound();
+                string oldFileName = toUpdate.Image;
                 fromRequest.Product.Image = oldFileName;
                 if (uploadedFiles.Count != 0)
                 {
@@ -108,6 +105,7 @@ namespace RockyShop.Controllers
         {
             var toDelete = _dbContext.Products
                 .Include(p => p.Category)
+                .Include(p => p.ApplicationType)
                 .Where(p => p.Id == id)
                 .FirstOrDefault();
             if (toDelete == null)
@@ -130,13 +128,20 @@ namespace RockyShop.Controllers
             return RedirectToAction("Index");
         }
 
-        private IEnumerable<SelectListItem> GetCategoryDropDown()
+        private void PopulateProductVM(ProductVM viewModel)
         {
-            return _dbContext.Categories.Select(c => new SelectListItem()
+            viewModel.CategoryDropDown = _dbContext.Categories.Select(c => new SelectListItem()
             {
                 Text = c.Name,
                 Value = c.Id.ToString()
             });
+            viewModel.AppTypeDropDown = _dbContext.ApplicationTypes.Select(a => new SelectListItem()
+            {
+                Text = a.Name,
+                Value = a.Id.ToString()
+            });
+            if (viewModel.Product == null)
+                viewModel.Product = new Product();
         }
     }
 }
