@@ -24,5 +24,9 @@ namespace RockyShop.Models
 
         [ForeignKey("CategoryId")]
         public virtual Category Category { get; set; }
+
+        //public int ItemId { get; set; }
+
+        //public virtual Item Item { get; set; }
     }
 }

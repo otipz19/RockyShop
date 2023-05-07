@@ -2,8 +2,8 @@
 
 namespace RockyShop.Models
 {
-	public class Item
-	{
+    public class ApplicationType
+    {
         [Key]
         public int Id { get; set; }
 
