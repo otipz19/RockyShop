@@ -15,12 +15,19 @@ namespace RockyShop
             builder.Services.AddControllersWithViews()
                 .AddRazorRuntimeCompilation();
 
-            builder.Services.AddDbContext<AppDbContext>(optionsBuilder =>
-            {
-                optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
-            });
-
-            builder.Services.AddScoped(typeof(ProductImageService));
+            builder.Services
+                .AddDbContext<AppDbContext>(optionsBuilder =>
+                {
+                    optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+                })
+                .AddScoped<ProductImageService>()
+                .AddHttpContextAccessor()
+                .AddSession(options =>
+                {
+                    options.Cookie.IsEssential = true;
+                    options.IdleTimeout = TimeSpan.FromMinutes(10);
+                    options.Cookie.HttpOnly = true;
+                });
 
             var app = builder.Build();
 
@@ -38,6 +45,8 @@ namespace RockyShop
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseSession();
 
             app.MapControllerRoute(
                 name: "default",

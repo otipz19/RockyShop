@@ -12,6 +12,10 @@ namespace RockyShop.Models
         [Required]
         public string Name { get; set; }
 
+        [Required]
+        [DisplayName("Short Description")]
+        public string ShortDescription { get; set; }
+
         public string Description { get; set; }
 
         [Required]

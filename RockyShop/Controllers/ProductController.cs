@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Primitives;
 using RockyShop.Data;
 using RockyShop.Models;
 using RockyShop.Models.ViewModels;
@@ -110,7 +111,6 @@ namespace RockyShop.Controllers
                 .FirstOrDefault();
             if (toDelete == null)
                 return NotFound();
-            //toDelete.Category = _dbContext.Categories.Find(toDelete.CategoryId);
             return View(toDelete);
         }
 
@@ -121,7 +121,7 @@ namespace RockyShop.Controllers
         {
             var toDelete = _dbContext.Products.Find(id);
             if (toDelete == null)
-                return NotFound();
+                return NotFound("Product with such id was not found");
             _productImageService.DeleteImage(toDelete.Image);
             _dbContext.Products.Remove(toDelete);
             _dbContext.SaveChanges();
@@ -140,8 +140,6 @@ namespace RockyShop.Controllers
                 Text = a.Name,
                 Value = a.Id.ToString()
             });
-            if (viewModel.Product == null)
-                viewModel.Product = new Product();
         }
     }
 }

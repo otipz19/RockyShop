@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 
 namespace RockyShop.Services
 {
     public class ProductImageService
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private const string _webFolderPath = "\\images\\products";
 
         public ProductImageService(IWebHostEnvironment webHostEnvironment)
         {
@@ -21,21 +21,22 @@ namespace RockyShop.Services
             if(extension.IsNullOrEmpty())
                 throw new ApplicationException("File name doesn't contain an extension");
 
-            string newFileName = Path.Combine("images", "products", Guid.NewGuid().ToString() + extension);
-            string fullPath = Path.Combine(_webHostEnvironment.WebRootPath, newFileName);
+            string newFileName = Path.Join(_webFolderPath, Guid.NewGuid().ToString() + extension);
+            string fullPath = Path.Join(_webHostEnvironment.WebRootPath, newFileName);
             using (var stream = new FileStream(fullPath, FileMode.Create))
             {
                 formFile.CopyTo(stream);
             }
 
-            return "\\" + newFileName;
+            return newFileName;
         }
 
         public void DeleteImage(string fileName)
         {
             string fullPath = Path.Join(_webHostEnvironment.WebRootPath, fileName);
             FileInfo fileInfo = new FileInfo(fullPath);
-            if (fileInfo.DirectoryName.Equals(Path.Combine(_webHostEnvironment.WebRootPath, "images", "products")) &&
+            string validFolderPath = Path.Join(_webHostEnvironment.WebRootPath, _webFolderPath);
+            if (fileInfo.DirectoryName.Equals(validFolderPath) &&
                 fileInfo.Exists)
             {
                 fileInfo.Delete();
