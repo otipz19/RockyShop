@@ -21,8 +21,9 @@ namespace RockyShop
                 .AddDbContext<AppDbContext>(optionsBuilder =>
                 {
                     optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
-                })
-                .AddScoped<ProductImageService>()
+                });
+
+            builder.Services
                 .AddHttpContextAccessor()
                 .AddSession(options =>
                 {
@@ -30,6 +31,10 @@ namespace RockyShop
                     options.IdleTimeout = TimeSpan.FromMinutes(10);
                     options.Cookie.HttpOnly = true;
                 });
+
+            builder.Services
+                .AddScoped<ProductImageService>()
+                .AddScoped<ShoppingCartService>();
 
             builder.Services
                 .AddIdentity<IdentityUser, IdentityRole>()

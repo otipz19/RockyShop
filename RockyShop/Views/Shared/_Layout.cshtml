@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Http;
 @using RockyShop.Utilities;
-@inject IHttpContextAccessor HttpContextAccessor
+@using RockyShop.Services
+@inject ShoppingCartService ShoppingCartService
 
 <!DOCTYPE html>
 <html lang="en">
@@ -43,12 +44,7 @@
                           </ul>
                         </li>
                         <li>
-                            @{
-                                ShoppingCart shoppingCart = HttpContextAccessor.HttpContext.Session
-                                    .Get<ShoppingCart>(Constants.ShoppingCartSessionKey);
-                                int count = shoppingCart?.ProductsId.Count() ?? 0;
-                            }
-                            @if(count == 0)
+                            @if(ShoppingCartService.CartCount() == 0)
                             {
                                 <a href="#" class="nav-link">
                                     <i class="fa-solid fa-cart-shopping"></i> 0
@@ -57,7 +53,7 @@
                             else
                             {
                                 <a asp-controller="Cart" asp-action="Index" class="nav-link">
-                                    <i class="fa-solid fa-cart-shopping"></i> @count
+                                    <i class="fa-solid fa-cart-shopping"></i> @ShoppingCartService.CartCount()
                                 </a>
                             }
                         </li>

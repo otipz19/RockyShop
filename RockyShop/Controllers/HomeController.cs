@@ -5,6 +5,7 @@ using RockyShop.Models;
 using RockyShop.Models.ViewModels;
 using System.Diagnostics;
 using RockyShop.Utilities;
+using RockyShop.Services;
 
 namespace RockyShop.Controllers
 {
@@ -12,11 +13,13 @@ namespace RockyShop.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly AppDbContext _dbContext;
+        private readonly ShoppingCartService _shoppingCartService;
 
-        public HomeController(ILogger<HomeController> logger, AppDbContext dbContext)
+        public HomeController(ILogger<HomeController> logger, AppDbContext dbContext, ShoppingCartService shoppingCartService)
         {
             _logger = logger;
             _dbContext = dbContext;
+            _shoppingCartService = shoppingCartService;
         }
 
         public IActionResult Index()
@@ -36,7 +39,6 @@ namespace RockyShop.Controllers
         {
             if (id == null)
                 return NotFound();
-            ShoppingCart shoppingCart = GetShoppingCart();
             var viewModel = new HomeDetailsVM()
             {
                 Product = _dbContext.Products
@@ -44,7 +46,7 @@ namespace RockyShop.Controllers
                     .Include(p => p.ApplicationType)
                     .Where(p => p.Id == id)
                     .FirstOrDefault(),
-                ExistsInCart = shoppingCart?.ProductsId.Contains((int)id) ?? false,
+                ExistsInCart = _shoppingCartService.CartContains((int)id)
             };
             if (viewModel.Product == null)
                 return NotFound();
@@ -58,9 +60,7 @@ namespace RockyShop.Controllers
         {
             if (id == null)
                 return NotFound();  
-            ShoppingCart shoppingCart = GetShoppingCart();
-            shoppingCart.ProductsId.Add((int)id);
-            HttpContext.Session.Set(Constants.ShoppingCartSessionKey, shoppingCart);
+            _shoppingCartService.AddToCart((int)id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -69,9 +69,7 @@ namespace RockyShop.Controllers
         {
             if (id == null)
                 return NotFound();
-            ShoppingCart shoppingCart = GetShoppingCart();
-            shoppingCart.ProductsId.Remove((int)id);
-            HttpContext.Session.Set(Constants.ShoppingCartSessionKey, shoppingCart);
+            _shoppingCartService.RemoveFromCart((int)id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -84,12 +82,6 @@ namespace RockyShop.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        private ShoppingCart GetShoppingCart()
-        {
-            ShoppingCart shoppingCart = HttpContext.Session.Get<ShoppingCart>(Constants.ShoppingCartSessionKey);
-            return shoppingCart ?? new ShoppingCart();
         }
     }
 }
