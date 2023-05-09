@@ -38,12 +38,14 @@
                               <li><div class="dropdown-divider"></div></li>
                               <li><a class="dropdown-item" asp-controller="Category" asp-action="Index">Categories</a></li>
                               <li><a class="dropdown-item" asp-controller="ApplicationType" asp-action="Index">Application Types</a></li>
-                            </ul>
+                              <li><div class="dropdown-divider"></div></li>
+                              <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Register">Create Admin User</a></li>
+                          </ul>
                         </li>
                         <li>
                             @{
                                 ShoppingCart shoppingCart = HttpContextAccessor.HttpContext.Session
-                                    .Get<ShoppingCart>(WebConstants.ShoppingCartSessionKey);
+                                    .Get<ShoppingCart>(Constants.ShoppingCartSessionKey);
                                 int count = shoppingCart?.ProductsId.Count() ?? 0;
                             }
                             @if(count == 0)

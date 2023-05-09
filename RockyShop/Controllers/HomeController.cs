@@ -60,7 +60,7 @@ namespace RockyShop.Controllers
                 return NotFound();  
             ShoppingCart shoppingCart = GetShoppingCart();
             shoppingCart.ProductsId.Add((int)id);
-            HttpContext.Session.Set(WebConstants.ShoppingCartSessionKey, shoppingCart);
+            HttpContext.Session.Set(Constants.ShoppingCartSessionKey, shoppingCart);
             return RedirectToAction(nameof(Index));
         }
 
@@ -71,7 +71,7 @@ namespace RockyShop.Controllers
                 return NotFound();
             ShoppingCart shoppingCart = GetShoppingCart();
             shoppingCart.ProductsId.Remove((int)id);
-            HttpContext.Session.Set(WebConstants.ShoppingCartSessionKey, shoppingCart);
+            HttpContext.Session.Set(Constants.ShoppingCartSessionKey, shoppingCart);
             return RedirectToAction(nameof(Index));
         }
 
@@ -88,7 +88,7 @@ namespace RockyShop.Controllers
 
         private ShoppingCart GetShoppingCart()
         {
-            ShoppingCart shoppingCart = HttpContext.Session.Get<ShoppingCart>(WebConstants.ShoppingCartSessionKey);
+            ShoppingCart shoppingCart = HttpContext.Session.Get<ShoppingCart>(Constants.ShoppingCartSessionKey);
             return shoppingCart ?? new ShoppingCart();
         }
     }

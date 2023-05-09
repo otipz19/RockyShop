@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using RockyShop.Services;
 using Microsoft.AspNetCore.Identity;
+using RockyShop.Models;
 
 namespace RockyShop
 {
@@ -31,7 +32,9 @@ namespace RockyShop
                 });
 
             builder.Services
-                .AddDefaultIdentity<IdentityUser>()
+                .AddIdentity<IdentityUser, IdentityRole>()
+                .AddDefaultTokenProviders()
+                .AddDefaultUI()
                 .AddEntityFrameworkStores<AppDbContext>();
 
             var app = builder.Build();

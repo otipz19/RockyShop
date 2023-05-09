@@ -16,5 +16,7 @@ namespace RockyShop.Data
         public DbSet<ApplicationType> ApplicationTypes { get; set; }
 
         public DbSet<Product> Products { get; set; }
+
+        public DbSet<AppUser> AppUsers { get; set; }
     }
 }
