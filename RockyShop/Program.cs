@@ -2,6 +2,7 @@ using RockyShop.Data;
 using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using RockyShop.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace RockyShop
 {
@@ -29,6 +30,10 @@ namespace RockyShop
                     options.Cookie.HttpOnly = true;
                 });
 
+            builder.Services
+                .AddDefaultIdentity<IdentityUser>()
+                .AddEntityFrameworkStores<AppDbContext>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -44,6 +49,7 @@ namespace RockyShop
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseSession();
@@ -51,6 +57,8 @@ namespace RockyShop
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}/{keyword?}");
+
+            app.MapRazorPages();
 
             app.Run();
         }

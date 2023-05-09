@@ -44,7 +44,7 @@
                             @{
                                 ShoppingCart shoppingCart = HttpContextAccessor.HttpContext.Session
                                     .Get<ShoppingCart>(WebConstants.ShoppingCartSessionKey);
-                                int count = shoppingCart == null ? 0 : shoppingCart.ProductsId.Count();
+                                int count = shoppingCart?.ProductsId.Count() ?? 0;
                             }
                             @if(count == 0)
                             {
@@ -61,6 +61,7 @@
                         </li>
                     </ul>
                 </div>
+                <partial name="_LoginPartial"/>
             </div>
         </nav>
     </header>
