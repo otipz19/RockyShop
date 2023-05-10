@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RockyShop.Data;
+using RockyShop.Interfaces;
 using RockyShop.Models.ViewModels;
 using RockyShop.Services;
 using System.Security.Claims;
@@ -28,8 +30,7 @@ namespace RockyShop.Controllers
             return View(_shoppingCartService.GetProductsFromCart());
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
         public IActionResult Summary()
         {
             var username = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -39,6 +40,31 @@ namespace RockyShop.Controllers
                 User = _dbContext.AppUsers.Find(username.Value)
             };
             return View(model:CartUserVM);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ActionName("Summary")]
+        public async Task<IActionResult> SummaryPost([FromServices]IEmailSenderService emailSenderService)
+        {
+            _shoppingCartService.ClearCart();
+
+            //Restore products from db by id
+            IEnumerable<int> productIds = CartUserVM.Products
+                .Select(p => p.Id);
+            CartUserVM.Products = await _dbContext.Products
+                .Where(p => productIds.Contains(p.Id))
+                .ToListAsync();
+
+            await emailSenderService.SendInquiryConfirmationEmailAsync(CartUserVM);
+
+            return RedirectToAction(nameof(InquiryConfirmation));
+        }
+
+        [HttpGet]
+        public IActionResult InquiryConfirmation()
+        {
+            return View();
         }
 
         [HttpGet]

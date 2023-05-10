@@ -1,9 +1,9 @@
 using RockyShop.Data;
-using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using RockyShop.Services;
 using Microsoft.AspNetCore.Identity;
-using RockyShop.Models;
+using RockyShop.Interfaces;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace RockyShop
 {
@@ -34,7 +34,10 @@ namespace RockyShop
 
             builder.Services
                 .AddScoped<ProductImageService>()
-                .AddScoped<ShoppingCartService>();
+                .AddScoped<ShoppingCartService>()
+                .AddTransient<IEmailSenderService, EmailSenderService>()
+                //For Identity Razor Pages
+                .AddTransient<IEmailSender, EmailSenderService>();
 
             builder.Services
                 .AddIdentity<IdentityUser, IdentityRole>()

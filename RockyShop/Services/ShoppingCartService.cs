@@ -6,6 +6,8 @@ namespace RockyShop.Services
 {
     public class ShoppingCartService
     {
+        private const string ShoppingCartSessionKey = "ShoppingCartSession";
+
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly AppDbContext _dbContext;
 
@@ -15,7 +17,7 @@ namespace RockyShop.Services
         {
             _httpContextAccessor = httpContextAccessor;
             _dbContext = dbContext;
-            _cart = GetShoppingCart();
+            _cart = GetFromSession();
         }
 
         public int CartCount()
@@ -31,31 +33,38 @@ namespace RockyShop.Services
         public void AddToCart(int productId)
         {
             _cart.ProductsId.Add(productId);
-            SaveShoppingCart();
+            SaveToSession();
         }
 
         public void RemoveFromCart(int productId)
         {
             _cart.ProductsId.Remove(productId);
-            SaveShoppingCart();
+            SaveToSession();
         }
 
-        public IEnumerable<Product> GetProductsFromCart()
+
+        public void ClearCart()
         {
-            return _dbContext.Products.Where(p => _cart.ProductsId.Contains(p.Id));
+            _cart.ProductsId.Clear();
+            SaveToSession();
         }
 
-        private ShoppingCart GetShoppingCart()
+        public IList<Product> GetProductsFromCart()
         {
-            ShoppingCart cart = _httpContextAccessor.HttpContext.Session.Get<ShoppingCart>(Constants.ShoppingCartSessionKey);
+            return _dbContext.Products.Where(p => _cart.ProductsId.Contains(p.Id)).ToList();
+        }
+
+        private ShoppingCart GetFromSession()
+        {
+            ShoppingCart cart = _httpContextAccessor.HttpContext.Session.Get<ShoppingCart>(ShoppingCartSessionKey);
             return cart ?? new ShoppingCart();
         }
 
-        private void SaveShoppingCart()
+        private void SaveToSession()
         {
             if (_cart == null)
                 throw new ApplicationException();
-            _httpContextAccessor.HttpContext.Session.Set(Constants.ShoppingCartSessionKey, _cart);
+            _httpContextAccessor.HttpContext.Session.Set(ShoppingCartSessionKey, _cart);
         }
     }
 }

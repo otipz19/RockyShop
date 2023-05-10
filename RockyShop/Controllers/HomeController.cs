@@ -53,9 +53,7 @@ namespace RockyShop.Controllers
             return View(viewModel);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [ActionName("Details")]
+        [HttpGet]
         public IActionResult AddToCart(int? id)
         {
             if (id == null)

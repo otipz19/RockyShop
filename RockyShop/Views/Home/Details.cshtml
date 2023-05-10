@@ -4,8 +4,6 @@
 }
 
 <div class="">
-    <form asp-action="Details" method="post">
-      
         <div class="container backgroundWhite pt-4"  >
             <div class="card" style="border:1px solid #000000; ">
                 <div class="card-header bg-dark text-light row container">
@@ -50,12 +48,11 @@
                             }
                             else
                             {
-                                <button asp-route-Id="@Model.Product.Id" type="submit" class="btn btn-primary form-control btn-lg" style="height:50px;">Add to Cart</button>
+                                <a asp-action="AddToCart" asp-route-Id="@Model.Product.Id" class="btn btn-primary form-control btn-lg" style="height:50px;">Add to Cart</a>
                             }
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </form>
 </div>
