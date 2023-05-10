@@ -4,7 +4,6 @@ using RockyShop.Data;
 using RockyShop.Models;
 using RockyShop.Models.ViewModels;
 using System.Diagnostics;
-using RockyShop.Utilities;
 using RockyShop.Services;
 
 namespace RockyShop.Controllers

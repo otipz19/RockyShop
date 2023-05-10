@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Primitives;
 using RockyShop.Data;
-using RockyShop.Models;
 using RockyShop.Models.ViewModels;
 using RockyShop.Services;
+using RockyShop.Utilities;
 
 namespace RockyShop.Controllers
 {
+    [Authorize(Roles = Constants.AdminRole)]
 	public class ProductController : Controller
 	{
 		private readonly AppDbContext _dbContext;

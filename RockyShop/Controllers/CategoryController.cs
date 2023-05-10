@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RockyShop.Data;
 using RockyShop.Models;
+using RockyShop.Utilities;
+using System.Data;
 
 namespace RockyShop.Controllers
 {
+    [Authorize(Roles = Constants.AdminRole)]
     public class CategoryController : Controller
     {
 		private const string notFoundCategoryMessage = "No category with such id!";

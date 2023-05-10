@@ -28,21 +28,24 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Catalog</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Content Management
-                            </a>
-                            <ul class="dropdown-menu">
-                              <li><a class="dropdown-item" asp-controller="Product" asp-action="Index">Products</a></li>
-                              <li><div class="dropdown-divider"></div></li>
-                              <li><a class="dropdown-item" asp-controller="Category" asp-action="Index">Categories</a></li>
-                              <li><a class="dropdown-item" asp-controller="ApplicationType" asp-action="Index">Application Types</a></li>
-                              <li><div class="dropdown-divider"></div></li>
-                              <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Register">Create Admin User</a></li>
-                          </ul>
-                        </li>
+                        @if (User.IsInRole(Constants.AdminRole))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Content Management
+                                </a>
+                                <ul class="dropdown-menu">
+                                  <li><a class="dropdown-item" asp-controller="Product" asp-action="Index">Products</a></li>
+                                  <li><div class="dropdown-divider"></div></li>
+                                  <li><a class="dropdown-item" asp-controller="Category" asp-action="Index">Categories</a></li>
+                                  <li><a class="dropdown-item" asp-controller="ApplicationType" asp-action="Index">Application Types</a></li>
+                                  <li><div class="dropdown-divider"></div></li>
+                                  <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Register">Create Admin User</a></li>
+                                </ul>
+                            </li>
+                        }
                         <li>
                             @if(ShoppingCartService.CartCount() == 0)
                             {
