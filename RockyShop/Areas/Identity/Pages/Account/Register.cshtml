@@ -3,7 +3,7 @@
 @{
     string title = "Register";
     string submitButtonClass = "btn-primary";
-    if (User.IsInRole(RockyShop.Utilities.Constants.AdminRole))
+    if (User.IsInRole(RockyShop.Utility.Utilities.Constants.AdminRole))
     {
         title = "Register Admin User";
         submitButtonClass = "btn-warning";

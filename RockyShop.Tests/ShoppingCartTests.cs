@@ -1,5 +1,5 @@
 using NuGet.Packaging;
-using RockyShop.Models;
+using RockyShop.Model.Models;
 using System.Text.Json;
 
 namespace RockyShop.Tests

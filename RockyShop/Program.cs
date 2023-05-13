@@ -1,8 +1,8 @@
-using RockyShop.Data;
+using RockyShop.DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
-using RockyShop.Services;
+using RockyShop.Utility.Services;
 using Microsoft.AspNetCore.Identity;
-using RockyShop.Interfaces;
+using RockyShop.Utility.Interfaces;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace RockyShop

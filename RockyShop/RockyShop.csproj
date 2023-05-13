@@ -17,11 +17,16 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.6" />
-	<PackageReference Include="Mailjet.Api" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\images\products\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Model\RockyShop.Model.csproj" />
+    <ProjectReference Include="..\RockyShop.DataAccess\RockyShop.DataAccess.csproj" />
+    <ProjectReference Include="..\Utility\RockyShop.Utility.csproj" />
   </ItemGroup>
 
 </Project>

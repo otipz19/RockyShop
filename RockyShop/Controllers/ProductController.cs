@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using RockyShop.Data;
-using RockyShop.Models.ViewModels;
-using RockyShop.Services;
-using RockyShop.Utilities;
+using RockyShop.DataAccess.Data;
+using RockyShop.Model.ViewModels;
+using RockyShop.Utility.Services;
+using RockyShop.Utility.Utilities;
 
 namespace RockyShop.Controllers
 {
@@ -99,7 +99,7 @@ namespace RockyShop.Controllers
             }
 
             _dbContext.SaveChanges();
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]

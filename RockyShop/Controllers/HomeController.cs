@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RockyShop.Data;
-using RockyShop.Models;
-using RockyShop.Models.ViewModels;
+using RockyShop.DataAccess.Data;
+using RockyShop.Model.Models;
+using RockyShop.Model.ViewModels;
 using System.Diagnostics;
-using RockyShop.Services;
+using RockyShop.Utility.Services;
 
 namespace RockyShop.Controllers
 {

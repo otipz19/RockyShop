@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RockyShop.Data;
-using RockyShop.Models;
-using RockyShop.Utilities;
+using RockyShop.DataAccess.Data;
+using RockyShop.Model.Models;
+using RockyShop.Utility.Utilities;
 using System.Data;
 
 namespace RockyShop.Controllers
