@@ -4,6 +4,9 @@ using RockyShop.Utility.Services;
 using Microsoft.AspNetCore.Identity;
 using RockyShop.Utility.Interfaces;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using RockyShop.DataAccess.Repository.Interfaces;
+using RockyShop.DataAccess.Repository;
+using RockyShop.Model.Models;
 
 namespace RockyShop
 {
@@ -21,7 +24,10 @@ namespace RockyShop
                 .AddDbContext<AppDbContext>(optionsBuilder =>
                 {
                     optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
-                });
+                })
+                .AddScoped<IRepository<Category>, Repository<Category>>()
+                .AddScoped<IRepository<ApplicationType>, Repository<ApplicationType>>()
+                .AddScoped<IProductRepository, ProductRepository>();
 
             builder.Services
                 .AddHttpContextAccessor()

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RockyShop.DataAccess.Data;
+using RockyShop.DataAccess.Repository.Interfaces;
 using RockyShop.Model.Models;
 using RockyShop.Utility.Utilities;
 using System.Data;
@@ -11,16 +10,16 @@ namespace RockyShop.Controllers
     [Authorize(Roles = Constants.AdminRole)]
     public class ApplicationTypeController : Controller
     {
-        private readonly AppDbContext _dbContext;
+        private readonly IRepository<ApplicationType> _appTypeRepo;
 
-        public ApplicationTypeController(AppDbContext dbContext)
+        public ApplicationTypeController(IRepository<ApplicationType> appTypeRepo)
         {
-            _dbContext = dbContext;    
+            _appTypeRepo = appTypeRepo;    
         }
 
         public IActionResult Index()
         {
-            var appTypes = _dbContext.ApplicationTypes;
+            var appTypes = _appTypeRepo.GetAll();
             return View(appTypes);
         }
 
@@ -36,15 +35,17 @@ namespace RockyShop.Controllers
         {
             if (!ModelState.IsValid)
                 return View(fromRequest);
-            _dbContext.ApplicationTypes.Add(fromRequest);
-            _dbContext.SaveChanges();
+            _appTypeRepo.Add(fromRequest);
+            _appTypeRepo.SaveChanges();
             return RedirectToAction("Index");
         }
 
         [HttpGet]
         public IActionResult Update(int? id)
         {
-            var toUpdate = _dbContext.ApplicationTypes.Find(id);
+            if (id == null)
+                return NotFound();
+            var toUpdate = _appTypeRepo.Find((int)id);
             if (toUpdate == null)
                 return NotFound();
             return View(toUpdate);
@@ -57,22 +58,22 @@ namespace RockyShop.Controllers
             if (!ModelState.IsValid)
                 return View(fromRequest);
 
-            var toUpdate = _dbContext.ApplicationTypes
-                    .AsNoTracking()
-                    .Where(a => a.Id == fromRequest.Id)
-                    .FirstOrDefault();
+            var toUpdate = _appTypeRepo
+                .FirstOrDefault(filter: a => a.Id == fromRequest.Id, isTracking: false);
             if (toUpdate == null)
                 return NotFound();
 
-            _dbContext.ApplicationTypes.Update(fromRequest);
-            _dbContext.SaveChanges();
+            _appTypeRepo.Update(fromRequest);
+            _appTypeRepo.SaveChanges();
             return RedirectToAction("Index");
         }
 
         [HttpGet]
         public IActionResult Delete(int? id)
         {
-            var toDelete = _dbContext.ApplicationTypes.Find(id);
+            if (id == null)
+                return NotFound();
+            var toDelete = _appTypeRepo.Find((int)id);
             if (toDelete == null)
                 return NotFound();
             return View(toDelete);
@@ -83,11 +84,13 @@ namespace RockyShop.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeletePost(int? id)
         {
-            var toDelete = _dbContext.ApplicationTypes.Find(id);
+            if (id == null)
+                return NotFound();
+            var toDelete = _appTypeRepo.Find((int)id);
             if (toDelete == null)
                 return NotFound();
-            _dbContext.ApplicationTypes.Remove(toDelete);
-            _dbContext.SaveChanges();
+            _appTypeRepo.Remove(toDelete);
+            _appTypeRepo.SaveChanges();
             return RedirectToAction("Index");
         }
     }

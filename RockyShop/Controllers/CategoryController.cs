@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RockyShop.DataAccess.Data;
+using RockyShop.DataAccess.Repository.Interfaces;
 using RockyShop.Model.Models;
 using RockyShop.Utility.Utilities;
-using System.Data;
 
 namespace RockyShop.Controllers
 {
@@ -12,16 +10,16 @@ namespace RockyShop.Controllers
     public class CategoryController : Controller
     {
 		private const string notFoundCategoryMessage = "No category with such id!";
-		private readonly AppDbContext _dbContext;
+		private readonly IRepository<Category> _categoryRepo;
 
-        public CategoryController(AppDbContext dbContext)
+        public CategoryController(IRepository<Category> categoryRepo)
         {
-            _dbContext = dbContext;
+            _categoryRepo = categoryRepo;
         }
 
         public IActionResult Index()
         {
-            var categories = _dbContext.Categories.AsEnumerable();
+            var categories = _categoryRepo.GetAll();
             return View(categories);
         }
 
@@ -38,8 +36,8 @@ namespace RockyShop.Controllers
             if (!ModelState.IsValid)
                 return View(category);
 
-            _dbContext.Categories.Add(category);
-            _dbContext.SaveChanges();
+            _categoryRepo.Add(category);
+            _categoryRepo.SaveChanges();
 
             return RedirectToAction("Index");
         }
@@ -47,10 +45,10 @@ namespace RockyShop.Controllers
         [HttpGet]
         public IActionResult Update([FromRoute]int? id)
         {
-            //if (id == null || id <= 0)
-            //    return NotFound(notFoundCategoryMessage);
+            if (id == null)
+                return NotFound(notFoundCategoryMessage);
 
-            var toUpdate = _dbContext.Categories.Find(id);
+            var toUpdate = _categoryRepo.Find((int)id);
             if (toUpdate == null)
                 return NotFound(notFoundCategoryMessage);
 
@@ -61,28 +59,26 @@ namespace RockyShop.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Update(Category fromRequest)
         {
-            var toUpdate = _dbContext.Categories
-                .AsNoTracking()
-                .Where(c => c.Id == fromRequest.Id)
-                .FirstOrDefault();
-            if (toUpdate == null)
-                return NotFound(notFoundCategoryMessage);
-
             if (!ModelState.IsValid)
                 return View(fromRequest);
 
-            _dbContext.Categories.Update(fromRequest);
-            _dbContext.SaveChanges();
+            var toUpdate = _categoryRepo
+                .FirstOrDefault(filter: c => c.Id == fromRequest.Id, isTracking: false);
+            if (toUpdate == null)
+                return NotFound(notFoundCategoryMessage);
+
+            _categoryRepo.Update(fromRequest);
+            _categoryRepo.SaveChanges();
             return RedirectToAction("Index");
         }
 
         [HttpGet]
         public IActionResult Delete([FromRoute]int? id)
         {
-			//if (id == null || id <= 0)
-			//	return NotFound(notFoundCategoryMessage);
+            if (id == null)
+                return NotFound(notFoundCategoryMessage);
 
-			var toDelete = _dbContext.Categories.Find(id);
+            var toDelete = _categoryRepo.Find((int)id);
             if (toDelete == null)
                 return NotFound(notFoundCategoryMessage);
 
@@ -93,12 +89,12 @@ namespace RockyShop.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Delete(Category fromRequest)
         {
-            var toDelete = _dbContext.Categories.Find(fromRequest.Id);
+            var toDelete = _categoryRepo.Find(fromRequest.Id);
             if (toDelete == null)
                 return NotFound(notFoundCategoryMessage);
 
-            _dbContext.Categories.Remove(toDelete);
-            _dbContext.SaveChanges();
+            _categoryRepo.Remove(toDelete);
+            _categoryRepo.SaveChanges();
             return RedirectToAction("Index");
         }
     }
