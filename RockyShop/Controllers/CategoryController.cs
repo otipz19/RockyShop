@@ -10,9 +10,9 @@ namespace RockyShop.Controllers
     public class CategoryController : Controller
     {
 		private const string notFoundCategoryMessage = "No category with such id!";
-		private readonly IRepository<Category> _categoryRepo;
+		private readonly ICategoryRepository _categoryRepo;
 
-        public CategoryController(IRepository<Category> categoryRepo)
+        public CategoryController(ICategoryRepository categoryRepo)
         {
             _categoryRepo = categoryRepo;
         }

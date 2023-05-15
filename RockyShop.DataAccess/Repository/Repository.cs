@@ -42,20 +42,14 @@ namespace RockyShop.DataAccess.Repository
             return _dbSet.Find(id);
         }
 
-        //public T FindAsNoTracking(int id)
-        //{
-        //    PropertyInfo idProp = typeof(T).GetProperty(name: "Id", returnType: typeof(int));
-        //    if(idProp != null)
-        //    {
-        //        return _dbSet.AsNoTracking()
-        //            .FirstOrDefault(e => (int) idProp.GetValue(e) == id);
-        //    }
-        //    return null;
-        //}
-
         public void Remove(T entity)
         {
             _dbSet.Remove(entity);
+        }
+
+        public void RemoveRange(IEnumerable<T> entities)
+        {
+            _dbSet.RemoveRange(entities);
         }
 
         public T FirstOrDefault(
@@ -63,19 +57,7 @@ namespace RockyShop.DataAccess.Repository
             string includeProperties = null,
             bool isTracking = true)
         {
-            IQueryable<T> query = _dbSet;
-            if (filter != null)
-                query = query.Where(filter);
-            if (!includeProperties.IsNullOrEmpty())
-            {
-                foreach (var prop in includeProperties
-                    .Split(PropertySeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                {
-                    query = query.Include(prop);
-                }
-            }
-            if (!isTracking)
-                query = query.AsNoTracking();
+            IQueryable<T> query = GetQuery(filter, includeProperties, isTracking);
             return query.FirstOrDefault();
         }
 
@@ -85,11 +67,20 @@ namespace RockyShop.DataAccess.Repository
             string includeProperties = null,
             bool isTracking = true)
         {
+            IQueryable<T> query = GetQuery(filter, includeProperties, isTracking);
+            if (orderBy != null)
+                query = orderBy(query);
+            return query.ToList();
+        }
+
+        private IQueryable<T> GetQuery(
+            Expression<Func<T, bool>> filter,
+            string includeProperties,
+            bool isTracking)
+        {
             IQueryable<T> query = _dbSet;
             if (filter != null)
                 query = query.Where(filter);
-            if (orderBy != null)
-                query = orderBy(query);
             if (!includeProperties.IsNullOrEmpty())
             {
                 foreach (var prop in includeProperties
@@ -100,7 +91,7 @@ namespace RockyShop.DataAccess.Repository
             }
             if (!isTracking)
                 query = query.AsNoTracking();
-            return query.ToList();
+            return query;
         }
     }
 }

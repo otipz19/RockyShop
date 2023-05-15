@@ -1,0 +1,23 @@
+﻿@using RockyShop.Utility.Utilities;
+
+@{
+	string success = (string)TempData[Constants.NotificationSuccess];
+	string error = (string)TempData[Constants.NotificationError];
+	if(success != null || error != null)
+	{
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+		<script src="~/lib/jquery/dist/jquery.min.js"></script>
+		@if(success != null)
+		{
+			<script>
+				toastr.success('@success');
+			</script>
+		}
+		else
+		{
+			<script>
+				toastr.error('@error');
+			</script>
+		}
+	}
+}

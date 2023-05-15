@@ -13,9 +13,9 @@ namespace RockyShop.DataAccess.Repository.Interfaces
 
         public void Remove(T entity);
 
-        public T Find(int id);
+        public void RemoveRange(IEnumerable<T> entities);
 
-        //public T FindAsNoTracking(int id);
+        public T Find(int id);
 
         public IEnumerable<T> GetAll(
             Expression<Func<T, bool>> filter = null,

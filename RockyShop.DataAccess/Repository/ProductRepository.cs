@@ -7,7 +7,7 @@ namespace RockyShop.DataAccess.Repository
 {
     public class ProductRepository : Repository<Product>, IProductRepository
     {
-        private readonly string includeAllProperties = $"{nameof(Product.Category)},{nameof(Product.ApplicationType)}";
+        private const string includeAllProperties = $"{nameof(Product.Category)},{nameof(Product.ApplicationType)}";
 
         public ProductRepository(AppDbContext dbContext) : base(dbContext)
         {

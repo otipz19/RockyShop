@@ -5,19 +5,23 @@ using RockyShop.Model.Models;
 using RockyShop.Model.ViewModels;
 using System.Diagnostics;
 using RockyShop.Utility.Services;
+using RockyShop.DataAccess.Repository.Interfaces;
 
 namespace RockyShop.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly AppDbContext _dbContext;
+        private readonly IProductRepository _productRepo;
+        private readonly ICategoryRepository _categoryRepo;
         private readonly ShoppingCartService _shoppingCartService;
 
-        public HomeController(ILogger<HomeController> logger, AppDbContext dbContext, ShoppingCartService shoppingCartService)
+        public HomeController(ILogger<HomeController> logger, IProductRepository productRepo,
+            ICategoryRepository categoryRepo, ShoppingCartService shoppingCartService)
         {
             _logger = logger;
-            _dbContext = dbContext;
+            _productRepo = productRepo;
+            _categoryRepo = categoryRepo;
             _shoppingCartService = shoppingCartService;
         }
 
@@ -25,10 +29,8 @@ namespace RockyShop.Controllers
         {
             var viewModel = new HomeIndexVM()
             {
-                Products = _dbContext.Products
-                    .Include(p => p.Category)
-                    .Include(p => p.ApplicationType),
-                Categories = _dbContext.Categories
+                Products = _productRepo.GetAllIncludeAll(),
+                Categories = _categoryRepo.GetAll(),
             };
             return View(viewModel);
         }
@@ -40,11 +42,7 @@ namespace RockyShop.Controllers
                 return NotFound();
             var viewModel = new HomeDetailsVM()
             {
-                Product = _dbContext.Products
-                    .Include(p => p.Category)
-                    .Include(p => p.ApplicationType)
-                    .Where(p => p.Id == id)
-                    .FirstOrDefault(),
+                Product = _productRepo.FirstOrDefaultIncludeAll(p => p.Id == id),
                 ExistsInCart = _shoppingCartService.CartContains((int)id)
             };
             if (viewModel.Product == null)

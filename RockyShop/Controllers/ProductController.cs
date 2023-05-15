@@ -13,13 +13,13 @@ namespace RockyShop.Controllers
 	public class ProductController : Controller
 	{
 		private readonly IProductRepository _productRepo;
-        private readonly IRepository<Category> _categoryRepo;
-        private readonly IRepository<ApplicationType> _appTypeRepo;
+        private readonly ICategoryRepository _categoryRepo;
+        private readonly IApplicationTypeRepository _appTypeRepo;
         private readonly ProductImageService _productImageService;
 
         public ProductController(IProductRepository productRepo,
-            IRepository<Category> categoryRepo,
-            IRepository<ApplicationType> appTypeRepo,
+            ICategoryRepository categoryRepo,
+            IApplicationTypeRepository appTypeRepo,
             ProductImageService productImageService)
         {
             _productRepo = productRepo;
@@ -55,6 +55,7 @@ namespace RockyShop.Controllers
         public IActionResult Upsert(ProductVM fromRequest)
         {
             PopulateProductVM(fromRequest);
+            TempData[Constants.NotificationError] = "Error on action!";
             if (!ModelState.IsValid)
                 return View(fromRequest);
 
@@ -103,7 +104,8 @@ namespace RockyShop.Controllers
             }
 
             _productRepo.SaveChanges();
-            return RedirectToAction(nameof(Index));
+			TempData[Constants.NotificationSuccess] = "Action was made successfully!";
+			return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]

@@ -25,9 +25,12 @@ namespace RockyShop
                 {
                     optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
                 })
-                .AddScoped<IRepository<Category>, Repository<Category>>()
-                .AddScoped<IRepository<ApplicationType>, Repository<ApplicationType>>()
-                .AddScoped<IProductRepository, ProductRepository>();
+                .AddScoped<ICategoryRepository, CategoryRepository>()
+                .AddScoped<IApplicationTypeRepository, ApplicationTypeRepository>()
+                .AddScoped<IProductRepository, ProductRepository>()
+                .AddScoped<IInquiryHeaderRepository, InquiryHeaderRepository>()
+                .AddScoped<IInquiryDetailsRepository, InquiryDetailsRepository>()
+                .AddScoped<IAppUserRepository, AppUserRepository>();
 
             builder.Services
                 .AddHttpContextAccessor()

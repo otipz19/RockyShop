@@ -1,23 +1,34 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RockyShop.DataAccess.Data;
 using RockyShop.Utility.Interfaces;
 using RockyShop.Model.ViewModels;
 using RockyShop.Utility.Services;
 using System.Security.Claims;
+using RockyShop.DataAccess.Repository.Interfaces;
+using RockyShop.Model.Models;
 
 namespace RockyShop.Controllers
 {
     [Authorize]
     public class CartController : Controller
     {
-        private readonly AppDbContext _dbContext;
+        private readonly IAppUserRepository _appUserRepo;
+        private readonly IProductRepository _productRepo;
+        private readonly IInquiryHeaderRepository _inquiryHeaderRepo;
+        private readonly IInquiryDetailsRepository _inquiryDetailsRepo;
         private readonly ShoppingCartService _shoppingCartService;
 
-        public CartController(AppDbContext dbContext, ShoppingCartService shoppingCartService)
+        public CartController(IAppUserRepository appUserRepo,
+            IProductRepository productRepo,
+            IInquiryHeaderRepository inquiryHeaderRepo,
+            IInquiryDetailsRepository inquiryDetailsRepo,
+            ShoppingCartService shoppingCartService)
         {
-            _dbContext = dbContext;
+            _appUserRepo = appUserRepo;
+            _productRepo = productRepo;
+            _inquiryHeaderRepo = inquiryHeaderRepo;
+            _inquiryDetailsRepo = inquiryDetailsRepo;
             _shoppingCartService = shoppingCartService;
         }
 
@@ -37,7 +48,7 @@ namespace RockyShop.Controllers
             CartUserVM = new CartUserVM()
             {
                 Products = _shoppingCartService.GetProductsFromCart(),
-                User = _dbContext.AppUsers.Find(username.Value)
+                User = _appUserRepo.Find(username.Value)
             };
             return View(model:CartUserVM);
         }
@@ -52,9 +63,29 @@ namespace RockyShop.Controllers
             //Restore products from db by id
             IEnumerable<int> productIds = CartUserVM.Products
                 .Select(p => p.Id);
-            CartUserVM.Products = await _dbContext.Products
-                .Where(p => productIds.Contains(p.Id))
-                .ToListAsync();
+            CartUserVM.Products = _productRepo.GetAll(filter: p => productIds.Contains(p.Id)).ToList();
+
+            var inquiryHeader = new InquiryHeader()
+            {
+                AppUserId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier),
+                InquiryTime = DateTime.Now,
+                Email = CartUserVM.User.Email,
+                PhoneNumber = CartUserVM.User.PhoneNumber,
+                FullName = CartUserVM.User.FullName,
+            };
+            _inquiryHeaderRepo.Add(inquiryHeader);
+            _inquiryHeaderRepo.SaveChanges();
+
+            foreach(var product in CartUserVM.Products)
+            {
+                var inquiryDetails = new InquiryDetails()
+                {
+                    InquiryHeaderId = inquiryHeader.Id,
+                    ProductId = product.Id,
+                };
+                _inquiryDetailsRepo.Add(inquiryDetails);
+            }
+            _inquiryDetailsRepo.SaveChanges();
 
             await emailSenderService.SendInquiryConfirmationEmailAsync(CartUserVM);
 

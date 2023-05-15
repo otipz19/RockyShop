@@ -37,6 +37,13 @@ namespace RockyShop.Utility.Services
             SaveToSession();
         }
 
+        public void AddToCartRange(IEnumerable<Product> products)
+        {
+            foreach (var product in products)
+                _cart.ProductsId.Add(product.Id);
+            SaveToSession();
+        }
+
         public void RemoveFromCart(int productId)
         {
             _cart.ProductsId.Remove(productId);

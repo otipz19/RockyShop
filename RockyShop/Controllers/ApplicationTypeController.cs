@@ -10,9 +10,9 @@ namespace RockyShop.Controllers
     [Authorize(Roles = Constants.AdminRole)]
     public class ApplicationTypeController : Controller
     {
-        private readonly IRepository<ApplicationType> _appTypeRepo;
+        private readonly IApplicationTypeRepository _appTypeRepo;
 
-        public ApplicationTypeController(IRepository<ApplicationType> appTypeRepo)
+        public ApplicationTypeController(IApplicationTypeRepository appTypeRepo)
         {
             _appTypeRepo = appTypeRepo;    
         }
