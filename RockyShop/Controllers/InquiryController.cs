@@ -47,21 +47,15 @@ namespace RockyShop.Controllers
         [HttpPost]
         [ActionName("Details")]
         [ValidateAntiForgeryToken]
-        public IActionResult ConvertToCart(int id)
+        public IActionResult ConvertToCart(InquiryVM inquiryVM)
         {
-            InquiryVM inquiryVM;
-            try
-            {
-                inquiryVM = GetInquiryVM(id);
-            }
-            catch
-            {
-                return NotFound();
-            }
+            inquiryVM.InquiryDetailsList = _inquiryDetailsRepo
+                .GetAllIncludeProduct(d => d.InquiryHeaderId == inquiryVM.InquiryHeader.Id, isTracking: false);
             var products = inquiryVM.InquiryDetailsList
                 .Select(d => d.Product);
-            _shoppingCartService.ClearCart();
+            _shoppingCartService.ClearCartItems();
             _shoppingCartService.AddToCartRange(products);
+            _shoppingCartService.InquiryId = inquiryVM.InquiryHeader.Id;
             return RedirectToAction(controllerName: "Cart", actionName: "Index");
         }
 

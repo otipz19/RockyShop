@@ -2,6 +2,8 @@
 {
     public class ShoppingCart
     {
-        public List<int> ProductsId { get; set; } = new List<int>();
+        public List<ShoppingCartItem> Items { get; set; } = new List<ShoppingCartItem>();
+
+        public int InquiryId { get; set; }
     }
 }

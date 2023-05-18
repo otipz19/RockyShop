@@ -1,9 +1,10 @@
-﻿@model IEnumerable<RockyShop.Model.Models.Product>
+﻿@model IList<ProductInCart>
 @{
     ViewData["Title"] = "Index";
+    bool isAdmin = User.IsInRole(Constants.AdminRole);
 }
 
-<form asp-action="Summary" method="get">
+<form method="post">
     <br />
     <div class="backgroundWhiteBorder">
         <div class="container row">
@@ -21,44 +22,94 @@
                     @if(Model.Count() > 0)
                     {
                         <div class="card-body">
-                        <div class=" d-none d-lg-block">
-                            <div class="row" style="color:#821f3d">
-                                <div class="col-lg-2">
-                                </div>
-                                <div class="col-12 col-lg-7">
-                                    Product Details
-                                </div>
-                                <div class="col-12 col-lg-2">
-                                    Price per sqft
-                                </div>
-                                <div class="col-6 col-sm-4 col-lg-1">
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr /> 
-                        @foreach(Product product in Model)
-                        {
-                            <div class="row h-100">
-                                <div class="col-4 col-md-2 text-center py-2">
-                                    <img src="@product.Image" class="rounded w-100" />
-                                </div>
-                                <div class="col-8 col-lg-7">
-                                    <h5>@product.Name</h5>
-                                    <div style="font-size:11px;">@(Html.Raw(product.Description))</div>
-                                </div>
-                                <div class="col-3 col-lg-2 pt-lg-4" style="font-size:11px;">
-                                    <span style="font-size:17px;"> @product.Price.ToString("c")</span>/ sqft
-
-                                </div>
-                                <div class="col-2 col-lg-1 p-0 pt-lg-4 text-center">
-                                    <a asp-action="Remove" asp-route-Id="@product.Id" class="btn btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                            <div class=" d-none d-lg-block">
+                                <div class="row" style="color:#821f3d">
+                                    <div class="col-lg-2">
+                                    </div>
+                                    @if (isAdmin)
+                                    {
+                                        <div class="col-12 col-lg-3">
+                                            Product Details
+                                        </div>
+                                        <div class="col-12 col-lg-2">
+                                            Price per sqft
+                                        </div>
+                                        <div class="col-6 col-lg-2">
+                                            SqFt
+                                        </div>
+                                        <div class="col-6 col-lg-2">
+                                            Total Price
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-6 col-lg-7">
+                                            Product Details
+                                        </div>
+                                        <div class="col-6 col-lg-2">
+                                            Price per sqft
+                                        </div>
+                                    }
+                                    <div class="col-6 col-sm-4 col-lg-1">
+                                    </div>
                                 </div>
                             </div>
-                        }
-                        <hr />
+
+                            <hr /> 
+                            @{
+                                double orderTotalPrice = 0;
+                            }
+                            @for(int i = 0; i < Model.Count(); i++)
+                            {
+                                <input hidden asp-for="@Model[i].Product.Id" />
+                                double productTotalPrice = Model[i].Product.Price * Model[i].SqFt;
+                                orderTotalPrice += productTotalPrice;
+                                <div class="row h-100">
+                                    <div class="col-4 col-md-2 text-center py-2">
+                                        <img src="@Model[i].Product.Image" class="rounded w-100" />
+                                    </div>
+                                    @if (isAdmin)
+                                    {
+                                        <div class="col-8 col-lg-3">
+                                            <h5>@Model[i].Product.Name</h5>
+                                            <div style="font-size:11px;">@(Html.Raw(Model[i].Product.ShortDescription))</div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-8 col-lg-7">
+                                            <h5>@Model[i].Product.Name</h5>
+                                            <div style="font-size:11px;">@(Html.Raw(Model[i].Product.ShortDescription))</div>
+                                        </div>
+                                    }
+                                    <div class="col-3 col-lg-2 pt-lg-4" style="font-size:11px;">
+                                        <span style="font-size:17px;"> @Model[i].Product.Price.ToString("c")</span>/ sqft
+                                    </div>
+                                    @if (isAdmin)
+                                    {
+                                        <div class="col-3 col-lg-2 pt-lg-4" style="font-size:11px;">
+                                            <input asp-for="@Model[i].SqFt" class="form-control"/>
+                                        </div>
+                                        <div class="col-3 col-lg-2 pt-lg-4" style="font-size:11px;">
+                                            <span style="font-size:17px;">@(productTotalPrice.ToString("c"))</span>
+                                        </div>
+                                    }
+                                    <div class="col-2 col-lg-1 p-0 pt-lg-4 text-center">
+                                        <a asp-action="Remove" asp-route-Id="@Model[i].Product.Id" class="btn btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <hr />
+                            }
+                            @if (isAdmin)
+                            {
+                                <div class="row">
+                                    <div class="col-12 text-end pr-4">
+                                        <span style="color:#821f3d;">Order total price: @orderTotalPrice.ToString("c")</span>
+                                    </div>
+                                </div>
+                            }
                         </div>
                     }
                     else
@@ -68,14 +119,22 @@
 
                     <div class="card-footer">
                         <div class="row">
-                            <div class="col-6 col-md-3 offset-md-9">
-                                @if(Model.Count() > 0)
+                            @if(Model.Count() > 0)
+                            {
+                                @if (isAdmin)
                                 {
-                                     <button type="submit" class="btn btn-success form-control ">
+                                    <div class="col-6 col-md-3 offset-md-6">
+                                        <button type="submit" asp-action="UpdateCart" class="btn btn-outline-primary form-control ">
+                                            <span>Update Cart</span>
+                                        </button>
+                                    </div>
+                                }
+                                <div class="col-6 col-md-3">
+                                     <button type="submit" asp-action="Continue" class="btn btn-outline-success form-control ">
                                         <span>Continue</span>
                                      </button>
-                                }
-                            </div>
+                                </div>
+                            }
                         </div>
                     </div>
                 </div>

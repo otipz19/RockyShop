@@ -40,26 +40,26 @@ namespace RockyShop.Controllers
         {
             if (id == null)
                 return NotFound();
-            var viewModel = new HomeDetailsVM()
+            var viewModel = new ProductInCart()
             {
                 Product = _productRepo.FirstOrDefaultIncludeAll(p => p.Id == id),
                 ExistsInCart = _shoppingCartService.CartContains((int)id)
             };
             if (viewModel.Product == null)
-                return NotFound();
+                return base.NotFound();
             return View(viewModel);
         }
 
-        [HttpGet]
-        public IActionResult AddToCart(int? id)
+        [HttpPost]
+        public IActionResult AddToCart(ProductInCart productInCart)
         {
-            if (id == null)
-                return NotFound();  
-            _shoppingCartService.AddToCart((int)id);
+            //if (!ModelState.IsValid)
+            //    return RedirectToAction(nameof(Details), routeValues: new { id = homeDetailsVM.Product.Id });
+            _shoppingCartService.AddToCart(productInCart.Product.Id, productInCart.SqFt);
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet]
+        [HttpPost]
         public IActionResult RemoveFromCart(int? id)
         {
             if (id == null)

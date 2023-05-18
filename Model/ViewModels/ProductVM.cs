@@ -5,7 +5,7 @@ namespace RockyShop.Model.ViewModels
 {
     public class ProductVM
     {
-        public Product Product { get; set; } = new Product();
+        public Models.Product Product { get; set; } = new Models.Product();
 
         public IEnumerable<SelectListItem> CategoryDropDown { get; set; }
 

@@ -1,6 +1,8 @@
 ﻿@model RockyShop.Model.ViewModels.CartUserVM
 @{
     ViewData["Title"] = "Summary";
+    bool isAdmin = User.IsInRole(Constants.AdminRole);
+    double orderTotalPrice = 0;
 }
 
 <form method="post">
@@ -28,31 +30,70 @@
                                 </div>
                                 <div class="row my-1">
                                     <div class="col-3">
-                                        <label asp-for="User.FullName">Name</label>
+                                        <label asp-for="User.FullName"></label>
                                     </div>
                                     <div class="col-9">
-                                        <input asp-for="User.FullName" type="text" class="form-control" />
+                                        <input asp-for="User.FullName" required type="text" class="form-control" />
                                         <span asp-validation-for="User.FullName" class="text-danger"></span>
                                     </div>
                                 </div>
                                 <div class="row my-1">
                                     <div class="col-3">
-                                        <label asp-for="User.PhoneNumber">Phone</label>
+                                        <label asp-for="User.PhoneNumber"></label>
                                     </div>
                                     <div class="col-9">
-                                        <input asp-for="User.PhoneNumber" type="text" class="form-control" />
+                                        <input asp-for="User.PhoneNumber" required type="text" class="form-control" />
                                         <span asp-validation-for="User.PhoneNumber" class="text-danger"></span>
                                     </div>
                                 </div>
                                 <div class="row my-1">
                                     <div class="col-3">
-                                        <label asp-for="User.Email">Email</label>
+                                        <label asp-for="User.Email"></label>
                                     </div>
                                     <div class="col-9">
-                                        <input asp-for="User.Email" type="text" class="form-control" />
+                                        <input asp-for="User.Email" required type="text" class="form-control" />
                                         <span asp-validation-for="User.Email" class="text-danger"></span>
                                     </div>
                                 </div>
+                                @if (isAdmin)
+                                {
+                                    <div class="row my-1">
+                                        <div class="col-3">
+                                            <label asp-for="User.State"></label>
+                                        </div>
+                                        <div class="col-9">
+                                            <input asp-for="User.State" required type="text" class="form-control" />
+                                            <span asp-validation-for="User.State" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row my-1">
+                                        <div class="col-3">
+                                            <label asp-for="User.City"></label>
+                                        </div>
+                                        <div class="col-9">
+                                            <input asp-for="User.City" required type="text" class="form-control" />
+                                            <span asp-validation-for="User.City" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row my-1">
+                                        <div class="col-3">
+                                            <label asp-for="User.Street"></label>
+                                        </div>
+                                        <div class="col-9">
+                                            <input asp-for="User.Street" required type="text" class="form-control" />
+                                            <span asp-validation-for="User.Street" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <div class="row my-1">
+                                        <div class="col-3">
+                                            <label asp-for="User.PoastalCode"></label>
+                                        </div>
+                                        <div class="col-9">
+                                            <input asp-for="User.PoastalCode" required type="text" class="form-control" />
+                                            <span asp-validation-for="User.PoastalCode" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                             <div class="col-12 col-lg-5 row">
                                 <div class="col-12">
@@ -60,14 +101,34 @@
                                         <span class="text-info">Order Summary:</span>
                                     </h4>
                                     <ul class="list-group mb-3">
-                                        @for(int i = 0; i < Model.Products.Count(); i++)
+                                        @for(int i = 0; i < Model.ProductInCartList.Count(); i++)
                                         {
-                                            <input hidden asp-for="Products[i].Id"/>
+                                            double productTotalPrice = Model.ProductInCartList[i].Product.Price * Model.ProductInCartList[i].SqFt;
+                                            orderTotalPrice += productTotalPrice;
+                                            <input hidden asp-for="ProductInCartList[i].Product.Id"/>
                                             <li class="list-group-item d-flex justify-content-between">
                                                 <div>
-                                                    <h6 class="my-0">@Model.Products[i].Name</h6>
-                                                    <small class="text-muted">Price per Sqft: @Model.Products[i].Price.ToString("c")</small>
+                                                    <h6 class="my-0">@Model.ProductInCartList[i].Product.Name</h6>
+                                                    @if (isAdmin)
+                                                    {
+                                                        <small class="text-muted">Sqft: @Model.ProductInCartList[i].SqFt</small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <small class="text-muted">Price per Sqft: @Model.ProductInCartList[i].Product.Price.ToString("c")</small>
+                                                    }
                                                 </div>
+                                                @if (isAdmin)
+                                                {
+                                                    <span class="text-muted">@((productTotalPrice).ToString("c"))</span>
+                                                }
+                                            </li>
+                                        }
+                                        @if (isAdmin)
+                                        {
+                                            <li class="list-group-item d-flex justify-content-between bg-light">
+                                                <small class="text-info">Order total:</small>
+                                                <strong class="text-info">@orderTotalPrice.ToString("c")</strong>
                                             </li>
                                         }
                                     </ul>
@@ -79,7 +140,15 @@
                 <div class="card-footer">
                     <div class="row">
                         <div class="col-12 col-md-5 offset-md-7">
-                            <button type="submit" class="btn btn-primary form-control">Submit Inquiry</button>
+                            @if(isAdmin)
+                            {
+                                //TODO: routes to different action
+                                <button type="submit" class="btn btn-success form-control">Submit Order</button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-primary form-control">Submit Inquiry</button>
+                            }
                         </div>
                     </div>
                 </div>

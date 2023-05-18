@@ -1,9 +1,11 @@
-﻿@model RockyShop.Model.ViewModels.HomeDetailsVM
+﻿@model RockyShop.Model.ViewModels.ProductInCart
 @{
     ViewData["Title"] = "Details";
 }
 
 <div class="">
+    <form asp-action="AddToCart" method="post">
+        <input hidden asp-for="Product.Id" />
         <div class="container backgroundWhite pt-4"  >
             <div class="card" style="border:1px solid #000000; ">
                 <div class="card-header bg-dark text-light row container">
@@ -26,11 +28,27 @@
                                     <div class="col-12">
                                         <span class="badge bg-primary p-3 border">@Model.Product.Category.Name</span>
                                         <span class="badge bg-success p-3 border" style="background-color:azure">@Model.Product.ApplicationType.Name</span>
-                                        <h3 class="text-success"></h3>
-
                                         <p class="text-secondary">@Html.Raw(Model.Product.Description)</p>
                                     </div>
 
+                                    @if (User.IsInRole(Constants.AdminRole))
+                                    {
+                                        <div class="col-12">
+                                            <p>SqFt:</p>
+                                        </div>
+                                        <div class="col-12">
+                                            @if (!Model.ExistsInCart)
+                                            {
+                                                <input asp-for="SqFt" type="number" class="form-control"/>
+                                            }
+                                            else
+                                            {
+                                                <input disabled asp-for="SqFt" type="number" class="form-control"/>
+                                            }
+                                        </div>
+                                        <span asp-validation-for="SqFt" class="text-danger"></span>
+                                    }
+                                    
                                 </div>
                             </div>
                         </div>
@@ -44,15 +62,22 @@
                         <div class="col-12 col-md-6 ">
                             @if (Model.ExistsInCart)
                             {
-                                <a asp-action="RemoveFromCart" asp-route-Id="@Model.Product.Id" class="btn btn-warning btn-square form-control btn-lg" style="height:50px;">Remove from Cart</a>
+                                <button asp-action="RemoveFromCart" asp-route-Id="@Model.Product.Id" class="btn btn-warning btn-square form-control btn-lg" style="height:50px;">Remove from Cart</button>
                             }
                             else
                             {
-                                <a asp-action="AddToCart" asp-route-Id="@Model.Product.Id" class="btn btn-primary form-control btn-lg" style="height:50px;">Add to Cart</a>
+                                <input type="submit" class="btn btn-primary form-control btn-lg" style="height:50px;" value="Add to Cart" />
                             }
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </form>
 </div>
+
+@section Scripts{
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+}

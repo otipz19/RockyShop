@@ -15,8 +15,7 @@ namespace RockyShop.DataAccess.Repository
 
         public IEnumerable<InquiryDetails> GetAllIncludeProduct(
             Expression<Func<InquiryDetails, bool>> filter = null,
-            Func<IQueryable<InquiryDetails>,
-            IOrderedQueryable<InquiryDetails>> orderBy = null,
+            Func<IQueryable<InquiryDetails>, IOrderedQueryable<InquiryDetails>> orderBy = null,
             bool isTracking = true)
         {
             return base.GetAll(filter, orderBy, includeProduct, isTracking);

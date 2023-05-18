@@ -7,6 +7,8 @@ using RockyShop.Utility.Services;
 using System.Security.Claims;
 using RockyShop.DataAccess.Repository.Interfaces;
 using RockyShop.Model.Models;
+using RockyShop.Utility.Utilities;
+using NuGet.Versioning;
 
 namespace RockyShop.Controllers
 {
@@ -38,17 +40,58 @@ namespace RockyShop.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return View(_shoppingCartService.GetProductsFromCart());
+            return View(_shoppingCartService.GetProductsInCart());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult UpdateCart(IEnumerable<ProductInCart> productInCartList)
+        {
+            UpdateCartState(productInCartList);
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Continue(IEnumerable<ProductInCart> productInCartList)
+        {
+            UpdateCartState(productInCartList);
+            return RedirectToAction(nameof(Summary));
         }
 
         [HttpGet]
         public IActionResult Summary()
         {
-            var username = User.FindFirst(ClaimTypes.NameIdentifier);
+            AppUser appUser;
+            if (User.IsInRole(Constants.AdminRole))
+            {
+                if (_shoppingCartService.IsCartFromInquiry)
+                {
+                    InquiryHeader inquiryHeader = _inquiryHeaderRepo.Find(_shoppingCartService.InquiryId);
+                    if (inquiryHeader == null)
+                        return NotFound();
+                    appUser = new AppUser()
+                    {
+                        Email = inquiryHeader.Email,
+                        FullName = inquiryHeader.FullName,
+                        PhoneNumber = inquiryHeader.PhoneNumber,
+                    };
+                }
+                else
+                {
+                    appUser = new AppUser();
+                }
+            }
+            else
+            {
+                var username = User.FindFirst(ClaimTypes.NameIdentifier);
+                appUser = _appUserRepo.Find(username.Value);
+            }
+
             CartUserVM = new CartUserVM()
             {
-                Products = _shoppingCartService.GetProductsFromCart(),
-                User = _appUserRepo.Find(username.Value)
+                ProductInCartList = _shoppingCartService.GetProductsInCart(),
+                User = appUser,
             };
             return View(model:CartUserVM);
         }
@@ -58,12 +101,15 @@ namespace RockyShop.Controllers
         [ActionName("Summary")]
         public async Task<IActionResult> SummaryPost([FromServices]IEmailSenderService emailSenderService)
         {
-            _shoppingCartService.ClearCart();
+            _shoppingCartService.ClearCartItems();
 
             //Restore products from db by id
-            IEnumerable<int> productIds = CartUserVM.Products
-                .Select(p => p.Id);
-            CartUserVM.Products = _productRepo.GetAll(filter: p => productIds.Contains(p.Id)).ToList();
+            IEnumerable<int> productIds = CartUserVM.ProductInCartList
+                .Select(p => p.Product.Id);
+            CartUserVM.ProductInCartList = _productRepo
+                .GetAll(filter: p => productIds.Contains(p.Id))
+                .Select(p => new ProductInCart() { Product = p })
+                .ToList();
 
             var inquiryHeader = new InquiryHeader()
             {
@@ -76,12 +122,12 @@ namespace RockyShop.Controllers
             _inquiryHeaderRepo.Add(inquiryHeader);
             _inquiryHeaderRepo.SaveChanges();
 
-            foreach(var product in CartUserVM.Products)
+            foreach(var productInCart in CartUserVM.ProductInCartList)
             {
                 var inquiryDetails = new InquiryDetails()
                 {
                     InquiryHeaderId = inquiryHeader.Id,
-                    ProductId = product.Id,
+                    ProductId = productInCart.Product.Id,
                 };
                 _inquiryDetailsRepo.Add(inquiryDetails);
             }
@@ -105,6 +151,12 @@ namespace RockyShop.Controllers
                 return NotFound();
             _shoppingCartService.RemoveFromCart((int)id);
             return RedirectToAction(nameof(Index));
+        }
+
+        private void UpdateCartState(IEnumerable<ProductInCart> productInCartList)
+        {
+            _shoppingCartService.ClearCartItems();
+            _shoppingCartService.AddToCartRange(productInCartList);
         }
     }
 }

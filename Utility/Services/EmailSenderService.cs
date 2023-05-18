@@ -73,9 +73,9 @@ namespace RockyShop.Utility.Services
         private string InputDataInTemplate(CartUserVM data, string template)
         {
             var productsStringBuilder = new StringBuilder();
-            foreach(var p in data.Products)
+            foreach(var product in data.ProductInCartList.Select(p => p.Product))
             {
-                productsStringBuilder.Append($" - Name: {p.Name} <span style= 'font-size:14px;'>(ID: {p.Id})</span><br/>");
+                productsStringBuilder.Append($" - Name: {product.Name} <span style= 'font-size:14px;'>(ID: {product.Id})</span><br/>");
             }
             //Name  : {0}
             //Email : {1}
