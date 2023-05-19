@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using RockyShop.DataAccess.Repository.Interfaces;
 using RockyShop.DataAccess.Repository;
 using RockyShop.Model.Models;
+using RockyShop.Utility.Utilities;
+using System.Configuration;
 
 namespace RockyShop
 {
@@ -48,13 +50,16 @@ namespace RockyShop
                 .AddScoped<ShoppingCartService>()
                 .AddTransient<IEmailSenderService, EmailSenderService>()
                 //For Identity Razor Pages
-                .AddTransient<IEmailSender, EmailSenderService>();
+                .AddTransient<IEmailSender, EmailSenderService>()
+                .AddScoped<IBraintreeService, BraintreeService>();
 
             builder.Services
                 .AddIdentity<IdentityUser, IdentityRole>()
                 .AddDefaultTokenProviders()
                 .AddDefaultUI()
                 .AddEntityFrameworkStores<AppDbContext>();
+
+            builder.Services.Configure<BraintreeSettings>(builder.Configuration.GetSection(BraintreeSettings.Section));
 
             var app = builder.Build();
 

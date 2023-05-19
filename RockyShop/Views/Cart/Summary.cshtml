@@ -5,7 +5,7 @@
     double orderTotalPrice = 0;
 }
 
-<form method="post">
+<form asp-action="Summary" id="form-confirm" method="post">
     <br />
     <div class="backgroundWhiteBorder">
         <div class="container">
@@ -111,6 +111,7 @@
                                                     <h6 class="my-0">@Model.ProductInCartList[i].Product.Name</h6>
                                                     @if (isAdmin)
                                                     {
+                                                        <input hidden asp-for="ProductInCartList[i].SqFt"/>
                                                         <small class="text-muted">Sqft: @Model.ProductInCartList[i].SqFt</small>
                                                     }
                                                     else
@@ -133,6 +134,17 @@
                                         }
                                     </ul>
                                 </div>
+                                @if (isAdmin)
+                                {
+                                    <div class="col-12">
+                                        <div class="wrapper">
+                                            <div class="checkout container">
+                                                <div id="dropin-container"></div>
+                                                <input hidden id="nonce" name="payment_method_nonce"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -142,12 +154,11 @@
                         <div class="col-12 col-md-5 offset-md-7">
                             @if(isAdmin)
                             {
-                                //TODO: routes to different action
-                                <button type="submit" class="btn btn-success form-control">Submit Order</button>
+                                <button type="submit" class="btn btn-outline-success form-control">Submit Order</button>
                             }
                             else
                             {
-                                <button type="submit" class="btn btn-primary form-control">Submit Inquiry</button>
+                                <button type="submit" class="btn btn-outline-primary form-control">Submit Inquiry</button>
                             }
                         </div>
                     </div>
@@ -160,5 +171,30 @@
 
 @section Scripts{
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://js.braintreegateway.com/web/dropin/1.37.0/js/dropin.min.js"></script>
+    <script>
+        const form = document.getElementById('form-confirm');
+
+        braintree.dropin.create({
+          authorization: '@ViewBag.ClientToken',
+          container: '#dropin-container'
+        }).then((dropinInstance) => {
+          form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            dropinInstance.requestPaymentMethod().then((payload) => {
+              // Step four: when the user is ready to complete their
+              //   transaction, use the dropinInstance to get a payment
+              //   method nonce for the user's selected payment method, then add
+              //   it a the hidden field before submitting the complete form to
+              //   a server-side integration
+              document.getElementById('nonce').value = payload.nonce;
+              form.submit();
+            }).catch((error) => { throw error; });
+          });
+        }).catch((error) => {
+          // handle errors
+        });
+    </script>
 }
 

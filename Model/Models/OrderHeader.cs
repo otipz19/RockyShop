@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using RockyShop.Model.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace RockyShop.Model.Models
 {
@@ -13,13 +14,13 @@ namespace RockyShop.Model.Models
 
         public DateTime OrderDate { get; set; }
 
-        public DateTime ShippingDate { get; set; }
+        public DateTime? ShippingDate { get; set; }
 
         public double FinalOrderTotal { get; set; }
 
-        public string OrderStatus { get; set; }
+        public OrderStatus OrderStatus { get; set; }
 
-        public DateTime PaymentDate { get; set; }
+        public DateTime? PaymentDate { get; set; }
 
         //public DateTime PaymentDueDate { get; set; }
 

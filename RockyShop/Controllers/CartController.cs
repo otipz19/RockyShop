@@ -9,6 +9,8 @@ using RockyShop.DataAccess.Repository.Interfaces;
 using RockyShop.Model.Models;
 using RockyShop.Utility.Utilities;
 using NuGet.Versioning;
+using RockyShop.Model.Enums;
+using Braintree;
 
 namespace RockyShop.Controllers
 {
@@ -19,19 +21,31 @@ namespace RockyShop.Controllers
         private readonly IProductRepository _productRepo;
         private readonly IInquiryHeaderRepository _inquiryHeaderRepo;
         private readonly IInquiryDetailsRepository _inquiryDetailsRepo;
+        private readonly IOrderHeaderRepository _orderHeaderRepo;
+        private readonly IOrderDetailsRepository _orderDetailsRepo;
         private readonly ShoppingCartService _shoppingCartService;
+        private readonly IBraintreeService _braintreeService;
+        private readonly IEmailSenderService _emailSenderService;
 
         public CartController(IAppUserRepository appUserRepo,
             IProductRepository productRepo,
             IInquiryHeaderRepository inquiryHeaderRepo,
             IInquiryDetailsRepository inquiryDetailsRepo,
-            ShoppingCartService shoppingCartService)
+            IOrderHeaderRepository orderHeaderRepo,
+            IOrderDetailsRepository orderDetailsRepo,
+            ShoppingCartService shoppingCartService,
+            IBraintreeService braintreeService,
+            IEmailSenderService emailSenderService)
         {
             _appUserRepo = appUserRepo;
             _productRepo = productRepo;
             _inquiryHeaderRepo = inquiryHeaderRepo;
             _inquiryDetailsRepo = inquiryDetailsRepo;
             _shoppingCartService = shoppingCartService;
+            _orderHeaderRepo = orderHeaderRepo;
+            _orderDetailsRepo = orderDetailsRepo;
+            _braintreeService = braintreeService;
+            _emailSenderService = emailSenderService;
         }
 
         [BindProperty]
@@ -60,7 +74,7 @@ namespace RockyShop.Controllers
         }
 
         [HttpGet]
-        public IActionResult Summary()
+        public async Task<IActionResult> Summary()
         {
             AppUser appUser;
             if (User.IsInRole(Constants.AdminRole))
@@ -81,6 +95,8 @@ namespace RockyShop.Controllers
                 {
                     appUser = new AppUser();
                 }
+
+                ViewBag.ClientToken = await _braintreeService.GetClientTokenAsync();
             }
             else
             {
@@ -99,7 +115,43 @@ namespace RockyShop.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("Summary")]
-        public async Task<IActionResult> SummaryPost([FromServices]IEmailSenderService emailSenderService)
+        public async Task<IActionResult> SummaryPost(IFormCollection formCollection)
+        {
+            if (User.IsInRole(Constants.AdminRole))
+            {
+                return await SubmitOrder(formCollection);
+            }
+            else
+            {
+                return await SubmitInquiry();
+            }
+        }
+
+        [HttpGet]
+        public IActionResult InquiryConfirmation(int id)
+        {
+            if (id != 0)
+                return View(_orderHeaderRepo.Find(id));
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult Remove(int? id)
+        {
+            if (id == null)
+                return NotFound();
+            _shoppingCartService.RemoveFromCart((int)id);
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public IActionResult ClearCart()
+        {
+            _shoppingCartService.ResetCart();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<IActionResult> SubmitInquiry()
         {
             _shoppingCartService.ClearCartItems();
 
@@ -122,7 +174,7 @@ namespace RockyShop.Controllers
             _inquiryHeaderRepo.Add(inquiryHeader);
             _inquiryHeaderRepo.SaveChanges();
 
-            foreach(var productInCart in CartUserVM.ProductInCartList)
+            foreach (var productInCart in CartUserVM.ProductInCartList)
             {
                 var inquiryDetails = new InquiryDetails()
                 {
@@ -133,24 +185,57 @@ namespace RockyShop.Controllers
             }
             _inquiryDetailsRepo.SaveChanges();
 
-            await emailSenderService.SendInquiryConfirmationEmailAsync(CartUserVM);
+            await _emailSenderService.SendInquiryConfirmationEmailAsync(CartUserVM);
 
             return RedirectToAction(nameof(InquiryConfirmation));
         }
 
-        [HttpGet]
-        public IActionResult InquiryConfirmation()
+        private async Task<IActionResult> SubmitOrder(IFormCollection formCollection)
         {
-            return View();
-        }
+            _shoppingCartService.ResetCart();
 
-        [HttpGet]
-        public IActionResult Remove(int? id)
-        {
-            if (id == null)
-                return NotFound();
-            _shoppingCartService.RemoveFromCart((int)id);
-            return RedirectToAction(nameof(Index));
+            IEnumerable<int> productIds = CartUserVM.ProductInCartList.Select(p => p.Product.Id);
+            IEnumerable<Product> products = _productRepo.GetAll(p => productIds.Contains(p.Id));
+            foreach (var productInCart in CartUserVM.ProductInCartList)
+            {
+                productInCart.Product = products.First(p => p.Id == productInCart.Product.Id);
+            }
+
+            var orderHeader = new OrderHeader()
+            {
+                CreatedByUserId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value,
+                OrderDate = DateTime.Now,
+                OrderStatus = OrderStatus.Pending,
+                FinalOrderTotal = CartUserVM.ProductInCartList.Sum(p => p.SqFt * p.Product.Price),
+                FullName = CartUserVM.User.FullName,
+                PhoneNumber = CartUserVM.User.PhoneNumber,
+                Email = CartUserVM.User.Email,
+                City = CartUserVM.User.City,
+                State = CartUserVM.User.State,
+                Street = CartUserVM.User.Street,
+                PoastalCode = CartUserVM.User.PoastalCode,
+            };
+            _orderHeaderRepo.Add(orderHeader);
+            _orderHeaderRepo.SaveChanges();
+
+            foreach (var productInCart in CartUserVM.ProductInCartList)
+            {
+                var orderDetails = new OrderDetails()
+                {
+                    OrderHeaderId = orderHeader.Id,
+                    ProductId = productInCart.Product.Id,
+                    SqFt = productInCart.SqFt,
+                    PricePerSqFt = productInCart.Product.Price,
+                };
+                _orderDetailsRepo.Add(orderDetails);
+            };
+            _orderDetailsRepo.SaveChanges();
+
+            string nonce = formCollection["payment_method_nonce"];
+            await _braintreeService.ProcessTransactionAsync(orderHeader, nonce);
+            _orderHeaderRepo.SaveChanges();
+
+            return RedirectToAction(nameof(InquiryConfirmation), new { id = orderHeader.Id });
         }
 
         private void UpdateCartState(IEnumerable<ProductInCart> productInCartList)
