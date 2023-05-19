@@ -30,7 +30,9 @@ namespace RockyShop
                 .AddScoped<IProductRepository, ProductRepository>()
                 .AddScoped<IInquiryHeaderRepository, InquiryHeaderRepository>()
                 .AddScoped<IInquiryDetailsRepository, InquiryDetailsRepository>()
-                .AddScoped<IAppUserRepository, AppUserRepository>();
+                .AddScoped<IAppUserRepository, AppUserRepository>()
+                .AddScoped<IOrderHeaderRepository, OrderHeaderRepository>()
+                .AddScoped<IOrderDetailsRepository, OrderDetailsRepository>();
 
             builder.Services
                 .AddHttpContextAccessor()
