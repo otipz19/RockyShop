@@ -9,6 +9,7 @@ using RockyShop.DataAccess.Repository;
 using RockyShop.Model.Models;
 using RockyShop.Utility.Utilities;
 using System.Configuration;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace RockyShop
 {
@@ -58,6 +59,14 @@ namespace RockyShop
                 .AddDefaultTokenProviders()
                 .AddDefaultUI()
                 .AddEntityFrameworkStores<AppDbContext>();
+
+            builder.Services
+                .AddAuthentication().AddFacebook(options =>
+                {
+                    var section = builder.Configuration.GetSection("Facebook");
+                    options.AppId = section["AppId"];
+                    options.AppSecret = section["AppSecret"];
+                });
 
             builder.Services.Configure<BraintreeSettings>(builder.Configuration.GetSection(BraintreeSettings.Section));
 
