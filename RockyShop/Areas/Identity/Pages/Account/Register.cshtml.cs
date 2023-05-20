@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using RockyShop.DataAccess.Data;
 using RockyShop.Model.Models;
 using RockyShop.Utility.Utilities;
 
@@ -32,6 +33,7 @@ namespace RockyShop.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly AppDbContext _dbContext;
 
         private readonly RoleManager<IdentityRole> _roleManager;
 
@@ -41,7 +43,8 @@ namespace RockyShop.Areas.Identity.Pages.Account
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            AppDbContext dbContext)
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -51,6 +54,7 @@ namespace RockyShop.Areas.Identity.Pages.Account
             _emailSender = emailSender;
 
             _roleManager = roleManager;
+            _dbContext = dbContext;
         }
 
         /// <summary>
@@ -144,7 +148,7 @@ namespace RockyShop.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
-                    if (User.IsInRole(Constants.AdminRole))
+                    if (User.IsInRole(Constants.AdminRole) || _dbContext.AppUsers.Count() == 0)
                     {
                         await _userManager.AddToRoleAsync(user, Constants.AdminRole);
                     }

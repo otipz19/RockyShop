@@ -1,5 +1,7 @@
-﻿using RockyShop.Model.Enums;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using RockyShop.Model.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RockyShop.Model.Models
 {
@@ -19,6 +21,9 @@ namespace RockyShop.Model.Models
         public double FinalOrderTotal { get; set; }
 
         public OrderStatus OrderStatus { get; set; }
+
+        [NotMapped]
+        public string OrderStatusText => OrderStatus.ToString();
 
         public DateTime? PaymentDate { get; set; }
 

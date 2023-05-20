@@ -56,6 +56,31 @@ namespace RockyShop.Utility.Services
             }
         }
 
+        public async Task<OrderStatus> RefundAsync(OrderHeader orderHeader)
+        {
+            Transaction transaction;
+            try
+            {
+                transaction = await _braintreeGateway.Transaction.FindAsync(orderHeader.TransactionId);
+            }
+            catch(Braintree.Exceptions.NotFoundException e)
+            {
+                return OrderStatus.Cancelled;
+            }
+            if (transaction.Status == TransactionStatus.SETTLING ||
+                transaction.Status == TransactionStatus.SETTLED ||
+                transaction.Status == TransactionStatus.SUBMITTED_FOR_SETTLEMENT)
+            {
+                await _braintreeGateway.Transaction.RefundAsync(orderHeader.TransactionId);
+                return OrderStatus.Refunded;
+            }
+            else
+            {
+                await _braintreeGateway.Transaction.VoidAsync(orderHeader.TransactionId);
+                return OrderStatus.Cancelled;
+            }
+        }
+
         private IBraintreeGateway CreateGetaway()
         {
             return new BraintreeGateway(_settings.Environment, _settings.MerchantId, _settings.PublicKey, _settings.PrivateKey);

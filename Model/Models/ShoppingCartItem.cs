@@ -4,6 +4,6 @@
     {
         public int ProductId { get; set; }
 
-        public int SqFt { get; set; }
+        public int SqFt { get; set; } = 1;
     }
 }

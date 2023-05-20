@@ -61,7 +61,8 @@ namespace RockyShop.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult UpdateCart(IEnumerable<ProductInCart> productInCartList)
         {
-            UpdateCartState(productInCartList);
+            if(ModelState.IsValid)
+                UpdateCartState(productInCartList);
             return RedirectToAction(nameof(Index));
         }
 
@@ -69,8 +70,13 @@ namespace RockyShop.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Continue(IEnumerable<ProductInCart> productInCartList)
         {
-            UpdateCartState(productInCartList);
-            return RedirectToAction(nameof(Summary));
+            if (ModelState.IsValid)
+            {
+                UpdateCartState(productInCartList);
+                return RedirectToAction(nameof(Summary));
+            }
+            return RedirectToAction(nameof(Index));
+
         }
 
         [HttpGet]
@@ -200,7 +206,7 @@ namespace RockyShop.Controllers
             {
                 productInCart.Product = products.First(p => p.Id == productInCart.Product.Id);
             }
-
+            
             var orderHeader = new OrderHeader()
             {
                 CreatedByUserId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value,

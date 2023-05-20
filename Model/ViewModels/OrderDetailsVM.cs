@@ -3,11 +3,11 @@ using RockyShop.Model.Models;
 
 namespace RockyShop.Model.ViewModels
 {
-    public class CartUserVM
+    public class OrderDetailsVM
     {
-        public AppUser User { get; set; }
+        public OrderHeader OrderHeader { get; set; }
 
         [ValidateNever]
-        public IList<ProductInCart> ProductInCartList { get; set; } = new List<ProductInCart>();
+        public IEnumerable<OrderDetails> OrderDetailsList { get; set; }
     }
 }

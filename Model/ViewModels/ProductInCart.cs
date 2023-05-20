@@ -1,4 +1,5 @@
-﻿using RockyShop.Model.Models;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using RockyShop.Model.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace RockyShop.Model.ViewModels
