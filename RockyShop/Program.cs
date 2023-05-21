@@ -1,15 +1,4 @@
-using RockyShop.DataAccess.Data;
-using Microsoft.EntityFrameworkCore;
-using RockyShop.Utility.Services;
-using Microsoft.AspNetCore.Identity;
 using RockyShop.Utility.Interfaces;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using RockyShop.DataAccess.Repository.Interfaces;
-using RockyShop.DataAccess.Repository;
-using RockyShop.Model.Models;
-using RockyShop.Utility.Utilities;
-using System.Configuration;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace RockyShop
 {
@@ -24,53 +13,22 @@ namespace RockyShop
                 .AddRazorRuntimeCompilation();
 
             builder.Services
-                .AddDbContext<AppDbContext>(optionsBuilder =>
-                {
-                    optionsBuilder.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
-                })
-                .AddScoped<ICategoryRepository, CategoryRepository>()
-                .AddScoped<IApplicationTypeRepository, ApplicationTypeRepository>()
-                .AddScoped<IProductRepository, ProductRepository>()
-                .AddScoped<IInquiryHeaderRepository, InquiryHeaderRepository>()
-                .AddScoped<IInquiryDetailsRepository, InquiryDetailsRepository>()
-                .AddScoped<IAppUserRepository, AppUserRepository>()
-                .AddScoped<IOrderHeaderRepository, OrderHeaderRepository>()
-                .AddScoped<IOrderDetailsRepository, OrderDetailsRepository>();
+                .AddAppDbContext(builder.Configuration, builder.Environment)
+                .AddMyRepositories()
+                .AddMyServices()
+                .AddMyOptions(builder.Configuration)
+                .AddSessionAccessor();
 
-            builder.Services
-                .AddHttpContextAccessor()
-                .AddSession(options =>
-                {
-                    options.Cookie.IsEssential = true;
-                    options.IdleTimeout = TimeSpan.FromMinutes(10);
-                    options.Cookie.HttpOnly = true;
-                });
+            builder.Services.AddIdentityServices();
 
-            builder.Services
-                .AddScoped<ProductImageService>()
-                .AddScoped<ShoppingCartService>()
-                .AddTransient<IEmailSenderService, EmailSenderService>()
-                //For Identity Razor Pages
-                .AddTransient<IEmailSender, EmailSenderService>()
-                .AddScoped<IBraintreeService, BraintreeService>();
-
-            builder.Services
-                .AddIdentity<IdentityUser, IdentityRole>()
-                .AddDefaultTokenProviders()
-                .AddDefaultUI()
-                .AddEntityFrameworkStores<AppDbContext>();
-
-            builder.Services
-                .AddAuthentication().AddFacebook(options =>
-                {
-                    var section = builder.Configuration.GetSection("Facebook");
-                    options.AppId = section["AppId"];
-                    options.AppSecret = section["AppSecret"];
-                });
-
-            builder.Services.Configure<BraintreeSettings>(builder.Configuration.GetSection(BraintreeSettings.Section));
+            builder.Services.AddFacebookAuthentication(builder.Configuration);
 
             var app = builder.Build();
+
+            using(var scope = app.Services.CreateScope())
+            {
+                scope.ServiceProvider.GetService<IDbInitializer>().Initialize().GetAwaiter().GetResult();
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

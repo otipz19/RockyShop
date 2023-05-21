@@ -33,7 +33,6 @@ namespace RockyShop.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
-        private readonly AppDbContext _dbContext;
 
         private readonly RoleManager<IdentityRole> _roleManager;
 
@@ -54,7 +53,6 @@ namespace RockyShop.Areas.Identity.Pages.Account
             _emailSender = emailSender;
 
             _roleManager = roleManager;
-            _dbContext = dbContext;
         }
 
         /// <summary>
@@ -120,12 +118,6 @@ namespace RockyShop.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            if(!await _roleManager.RoleExistsAsync(Constants.AdminRole))
-            {
-                await _roleManager.CreateAsync(new IdentityRole(Constants.AdminRole));
-                await _roleManager.CreateAsync(new IdentityRole(Constants.CustomerRole));
-            }
-
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
@@ -148,7 +140,7 @@ namespace RockyShop.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
-                    if (User.IsInRole(Constants.AdminRole) || _dbContext.AppUsers.Count() == 0)
+                    if (User.IsInRole(Constants.AdminRole))
                     {
                         await _userManager.AddToRoleAsync(user, Constants.AdminRole);
                     }

@@ -5,27 +5,22 @@ using RockyShop.Model.ViewModels;
 using System.Text;
 using RockyShop.Utility.Interfaces;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using RockyShop.Utility.Utilities;
 
 namespace RockyShop.Utility.Services
 {
     public class EmailSenderService : IEmailSenderService
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
-
+        private readonly MailjetSettings _settings;
         private readonly MailjetClient _mailjetClient;
 
-        private readonly string _apiKeyPublic;
-        private readonly string _apiKeyPrivate;
-        private readonly string _senderEmail;
-
-        public EmailSenderService(IWebHostEnvironment webHostEnvironment)
+        public EmailSenderService(IWebHostEnvironment webHostEnvironment, IOptions<MailjetSettings> options)
         {
-            _apiKeyPublic = Environment.GetEnvironmentVariable("$MJ_APIKEY_PUBLIC");
-            _apiKeyPrivate = Environment.GetEnvironmentVariable("$MJ_APIKEY_PRIVATE");
-            _senderEmail = Environment.GetEnvironmentVariable("$MJ_SENDER_EMAIL");
-
-            _mailjetClient = new MailjetClient(_apiKeyPublic, _apiKeyPrivate);
-
+            _settings = options.Value;
+            _mailjetClient = new MailjetClient(_settings.ApiKeyPublic, _settings.ApiKeyPrivate);
             _webHostEnvironment = webHostEnvironment;
         }
 
@@ -39,7 +34,7 @@ namespace RockyShop.Utility.Services
             {
                 Resource = Send.Resource,
             }
-                .Property(Send.FromEmail, _senderEmail)
+                .Property(Send.FromEmail, _settings.SenderEmail)
                 .Property(Send.FromName, "Rocky shop")
                 .Property(Send.Subject, subject)
                 .Property(Send.HtmlPart, htmlMessage)
@@ -56,7 +51,7 @@ namespace RockyShop.Utility.Services
             string template = await ReadTemplate();
             string HtmlBody = InputDataInTemplate(data, template);
             //_senderEmail because this email is sent to admin of website
-            await SendEmailAsync(_senderEmail, "Inquiry Confirmation", HtmlBody);
+            await SendEmailAsync(_settings.SenderEmail, "Inquiry Confirmation", HtmlBody);
         }
 
         private async Task<string> ReadTemplate()
