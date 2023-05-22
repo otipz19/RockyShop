@@ -29,7 +29,7 @@ namespace RockyShop.Controllers
         {
             var viewModel = new HomeIndexVM()
             {
-                Products = _productRepo.GetAllIncludeAll(),
+                Products = _productRepo.GetAllIncludeAll().OrderBy(p => p.Category.DisplayOrder),
                 Categories = _categoryRepo.GetAll(),
             };
             return View(viewModel);

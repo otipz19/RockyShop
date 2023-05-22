@@ -61,8 +61,7 @@ namespace RockyShop.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult UpdateCart(IEnumerable<ProductInCart> productInCartList)
         {
-            if(ModelState.IsValid)
-                UpdateCartState(productInCartList);
+            UpdateCartState(productInCartList);
             return RedirectToAction(nameof(Index));
         }
 
@@ -70,13 +69,8 @@ namespace RockyShop.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Continue(IEnumerable<ProductInCart> productInCartList)
         {
-            if (ModelState.IsValid)
-            {
-                UpdateCartState(productInCartList);
-                return RedirectToAction(nameof(Summary));
-            }
-            return RedirectToAction(nameof(Index));
-
+            UpdateCartState(productInCartList);
+            return RedirectToAction(nameof(Summary));
         }
 
         [HttpGet]

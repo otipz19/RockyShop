@@ -89,7 +89,7 @@
                         Image
                     </div>
                     <div class="col-8">
-                        <input asp-for="Product.Image" type="file" name="Image" id="uploadBox" multiple class="form-control"/>
+                        <input asp-for="Product.Image" type="file" accept="image/png, image/gif, image/jpeg" name="Image" id="uploadBox" multiple class="form-control" />
                         <span asp-validation-for="Product.Image" class="text-danger"></span>
                     </div>
                 </div>

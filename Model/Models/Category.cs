@@ -9,10 +9,12 @@ namespace RockyShop.Model.Models
         public int Id { get; set; }
 
         [Required]
+        [MinLength(1)]
+        [MaxLength(15)]
         public string Name { get; set; }
 
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Display order should be positive!")]
+        [Range(1, 100, ErrorMessage = "Display order should be positive!")]
         [DisplayName("Display order")]
         public int DisplayOrder { get; set; } 
     }

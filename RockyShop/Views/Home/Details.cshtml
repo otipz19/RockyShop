@@ -8,12 +8,14 @@
         <input hidden asp-for="Product.Id" />
         <div class="container backgroundWhite pt-4"  >
             <div class="card" style="border:1px solid #000000; ">
-                <div class="card-header bg-dark text-light row container">
-                    <div class="col-6">
-                        <h1 class="text-white">@Model.Product.Name</h1>
-                    </div>
-                    <div class="col-6">
-                        <h1 class="text-warning text-end" >@((Model.Product.Price).ToString("c"))</h1>
+                <div class="card-header bg-dark text-light container">
+                    <div class="row">
+                        <div class="col-6">
+                            <h1 class="text-white">@Model.Product.Name</h1>
+                        </div>
+                        <div class="col-6">
+                            <h1 class="text-warning text-end">@((Model.Product.Price).ToString("c"))</h1>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">

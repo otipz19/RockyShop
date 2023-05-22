@@ -8,6 +8,7 @@ namespace RockyShop.Utility.Services
     {
         private readonly IWebHostEnvironment _webHostEnvironment;
         private const string _webFolderPath = "\\images\\products";
+        private readonly IEnumerable<string> allowedFormats = new string[] { ".jpg", ".png", ".gif", ".bmp"};
 
         public ProductImageService(IWebHostEnvironment webHostEnvironment)
         {
@@ -20,8 +21,10 @@ namespace RockyShop.Utility.Services
         public string UploadImage(IFormFile formFile)
         {
             string extension = Path.GetExtension(formFile.FileName);
-            if(extension.IsNullOrEmpty())
+            if (extension.IsNullOrEmpty())
                 throw new ApplicationException("File name doesn't contain an extension");
+            else if (!allowedFormats.Contains(extension))
+                throw new ApplicationException("Not allowed format");
 
             string newFileName = Path.Join(_webFolderPath, Guid.NewGuid().ToString() + extension);
             string fullPath = Path.Join(_webHostEnvironment.WebRootPath, newFileName);
